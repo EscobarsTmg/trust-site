@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Wallet } from "lucide-react";
 import {
   WalletConnectWallet,
   WalletConnectChainID
@@ -8,7 +9,7 @@ import {
 
 type WalletState = "idle" | "connecting" | "connected" | "error";
 
-export default function WalletConnect() {
+export default function WalletConnect({ compact = false }: { compact?: boolean }) {
   const walletRef = useRef<WalletConnectWallet | null>(null);
   const [state, setState] = useState<WalletState>("idle");
   const [address, setAddress] = useState("");
@@ -19,7 +20,7 @@ export default function WalletConnect() {
 
     const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
     if (!projectId) {
-      throw new Error("NEXT_PUBLIC_REOWN_PROJECT_ID is not configured.");
+      throw new Error("WalletConnect project ID is not configured.");
     }
 
     const wallet = new WalletConnectWallet({
@@ -28,14 +29,14 @@ export default function WalletConnect() {
         relayUrl: "wss://relay.walletconnect.com",
         projectId,
         metadata: {
-          name: "VaultView",
-          description: "Read-only wallet connection for VaultView",
+          name: "VirtualWallet",
+          description: "VirtualWallet secure wallet connection",
           url: window.location.origin,
           icons: [window.location.origin + "/icon.svg"]
         }
       },
       allWallets: "SHOW",
-      themeMode: "dark",
+      themeMode: "light",
       enableWalletGuide: true,
       themeVariables: {
         "--w3m-z-index": 10000
@@ -70,7 +71,7 @@ export default function WalletConnect() {
           setState("connected");
         }
       } catch {
-        // Project ID may intentionally be absent in local preview.
+        // Wallet connection remains inactive until configuration is present.
       }
     })();
 
@@ -82,6 +83,7 @@ export default function WalletConnect() {
   const connect = async () => {
     setState("connecting");
     setMessage("");
+
     try {
       const wallet = getWallet();
       const result = await wallet.connect();
@@ -104,28 +106,40 @@ export default function WalletConnect() {
     }
   };
 
-  const short = address ? address.slice(0, 7) + "…" + address.slice(-5) : "";
+  const shortAddress = address
+    ? address.slice(0, 6) + "…" + address.slice(-4)
+    : "";
 
   return (
-    <div className="wallet-control">
+    <div className="relative">
       {address ? (
-        <>
-          <span className="wallet-dot" aria-hidden="true" />
-          <span className="wallet-address">{short}</span>
-          <button className="button button-ghost" onClick={disconnect}>
-            Disconnect
-          </button>
-        </>
+        <button
+          onClick={disconnect}
+          className="inline-flex h-11 items-center gap-2 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-violet-300"
+        >
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          {shortAddress}
+        </button>
       ) : (
         <button
-          className="button button-primary"
           onClick={connect}
           disabled={state === "connecting"}
+          className={
+            compact
+              ? "inline-flex h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-violet-300 disabled:opacity-60"
+              : "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white shadow-lg shadow-violet-500/10 transition hover:-translate-y-0.5 hover:bg-violet-700 disabled:opacity-60"
+          }
         >
-          {state === "connecting" ? "Connecting…" : "Connect wallet"}
+          <Wallet className="h-4 w-4" />
+          {state === "connecting" ? "Connecting…" : "Connect Wallet"}
         </button>
       )}
-      {message ? <span className="wallet-error">{message}</span> : null}
+
+      {message ? (
+        <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-rose-100 bg-white p-3 text-xs leading-5 text-rose-600 shadow-xl">
+          {message}
+        </div>
+      ) : null}
     </div>
   );
 }
