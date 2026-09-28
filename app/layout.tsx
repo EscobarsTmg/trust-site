@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VirtualWallet — The crypto wallet you control",
+  title: "VirtualWallet — Kontrol ettiğiniz kripto cüzdanı",
   description:
-    "A self-custody wallet experience for mobile and browser with multi-network support."
+    "VirtualWallet bağımsız cüzdan arayüzü önizlemesi. Mobil ve masaüstü için tasarlandı; Trust Wallet ile bağlantılı değildir."
 };
 
 export default function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="tr">
       <body>{children}</body>
     </html>
   );
