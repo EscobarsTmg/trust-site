@@ -59,16 +59,24 @@ export default function WalletConnect() {
   };
 
   useEffect(() => {
-    try {
-      const wallet = getWallet();
-      const status = wallet.checkConnectStatus();
-      if (status?.address) {
-        setAddress(status.address);
-        setState("connected");
+    let active = true;
+
+    void (async () => {
+      try {
+        const wallet = getWallet();
+        const status = await wallet.checkConnectStatus();
+        if (active && status?.address) {
+          setAddress(status.address);
+          setState("connected");
+        }
+      } catch {
+        // Project ID may intentionally be absent in local preview.
       }
-    } catch {
-      // Project ID may intentionally be absent in local preview.
-    }
+    })();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const connect = async () => {
